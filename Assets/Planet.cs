@@ -17,6 +17,12 @@ public class Planet : MonoBehaviour
     GameObject cte;
     float G;
 
+    public GameObject trail;
+    TrailRenderer trailRenderer;
+    public float trailSize = .1f;
+    public float trailPersistance = 2;
+    public Color trailColor = Color.white;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +34,9 @@ public class Planet : MonoBehaviour
         G = cte.GetComponent<Constants> ().G;
 
         velocity = initDir.normalized * initSpeed;
+
+        trailRenderer = trail.AddComponent<TrailRenderer> ();
+        TrailSettings();
         
     }
 
@@ -48,5 +57,13 @@ public class Planet : MonoBehaviour
         if (rotSpeed != 0) {
             transform.Rotate(rotDir.normalized * rotSpeed * Time.deltaTime);
         }
+    }
+
+    void TrailSettings () {
+        trailRenderer.time = trailPersistance;
+        trailRenderer.material.color = trailColor;
+        trailRenderer.startWidth = trailSize;
+        trailRenderer.endWidth = trailSize;
+        // trailRenderer.enabled = true;
     }
 }
