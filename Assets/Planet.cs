@@ -4,13 +4,15 @@ using UnityEngine;
 
 public class Planet : MonoBehaviour
 {
-    public float mass = 1;
-    public float initSpeed;
-    public Vector3 initDir;
+    public float mass = 1; // La masse n'a pas d'importance pour le moment
+    public float initSpeed; // Vitesse initiale
+    public Vector3 initDir; // Direction du vecteur vitees initial
+    public float rotSpeed = 0; // Vitesse de rotation en deg/sec
+    public Vector3 rotDir = new Vector3(0,1,0); // Axe de rotation
 
     Vector3 velocity;
     GameObject attractor;
-    float attractorMass;
+        float attractorMass;
     float attractorRadius;
     GameObject cte;
     float G;
@@ -25,7 +27,7 @@ public class Planet : MonoBehaviour
         attractorRadius = attractor.transform.localScale.x;
         G = cte.GetComponent<Constants> ().G;
 
-        velocity = initDir * initSpeed;
+        velocity = initDir.normalized * initSpeed;
         
     }
 
@@ -35,13 +37,16 @@ public class Planet : MonoBehaviour
         Vector3 vectToAttractor = attractor.transform.position - transform.position;
         Vector3 dirToAttractor = vectToAttractor.normalized;
         float dstToAttractor = (attractor.transform.position - transform.position).magnitude;
-
-        Vector3 acceleration = G * attractorMass / Mathf.Pow(dstToAttractor, 2) * dirToAttractor;
         
         if (dstToAttractor > attractorRadius) {
+            Vector3 acceleration = G * attractorMass / Mathf.Pow(dstToAttractor, 2) * dirToAttractor;
             velocity += acceleration * Time.deltaTime;
         }
-        
-        transform.position += velocity * Time.deltaTime;
+
+        transform.Translate(velocity * Time.deltaTime, Space.World);
+
+        if (rotSpeed != 0) {
+            transform.Rotate(rotDir.normalized * rotSpeed * Time.deltaTime);
+        }
     }
 }
