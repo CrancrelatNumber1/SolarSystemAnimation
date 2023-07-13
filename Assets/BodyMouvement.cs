@@ -13,6 +13,8 @@ public class Body : MonoBehaviour
 
     // Variables of the body
     Vector3 velocity;
+    Vector3 sumAcceleration;
+    // bool ShouldMerge = false;
 
     // Relation to other objects
     GameObject[] bodies;
@@ -24,39 +26,43 @@ public class Body : MonoBehaviour
     float G;
 
     // Trail parameters
-    TrailRenderer trailRenderer;
+    TrailRenderer trail;
     public float trailSize = .1f;
     public float trailPersistance = 2;
     public Color trailColor = Color.white;
     public bool trailIsOn = true;
 
     // Calculates the sum of the forces applied on the body 
-    Vector3 CalculateAcceleration(GameObject[] bodies, float[] masses) {
+    IEnumerator CalculateAcceleration() {
 
-        Vector3[] forces = new Vector3[bodies.Length];
-        Vector3 sumForce = Vector3.zero;
+        bodies = GetBodyArray();
+        masses = GetMasses(bodies);
+
+        Vector3[] accelerations = new Vector3[bodies.Length];
+        sumAcceleration = Vector3.zero;
 
         for (int i = 0; i < bodies.Length; i++) {
             GameObject attractor = bodies[i];
-            
-            if (GetDistanceTo(attractor) > minAttractionDistance && attractor != this.gameObject) {
+
+            if (GetDistanceTo(attractor) > Mathf.Max(transform.localScale.x, attractor.transform.localScale.x)/2 && attractor != this.gameObject) {
                 Vector3 vectToAttractor = attractor.transform.position - transform.position;
                 Vector3 directionToAttractor = vectToAttractor.normalized;
                 float distanceToAttractor = vectToAttractor.magnitude;
-                forces[i] = (G * masses[i] / distanceToAttractor) * directionToAttractor; 
+                accelerations[i] = (G * masses[i] / distanceToAttractor) * directionToAttractor; 
             }
             else {
-                if (GetDistanceTo(attractor) < Mathf.Max(minAttractionDistance, attractor.GetComponent<Body>().minAttractionDistance)
+                if (GetDistanceTo(attractor) < Mathf.Max(transform.localScale.x, attractor.transform.localScale.x)/2
                 && attractor != this.gameObject) {
-                    Merge(attractor, this.gameObject);
+                    // ShouldMerge = true;
+                    yield return StartCoroutine(Merge(attractor, this.gameObject));
                 }
             }
 
-            foreach (Vector3 force in forces) {
-                sumForce += force;
+            foreach (Vector3 acceleration in accelerations) {
+                sumAcceleration += acceleration;
             }
         }
-        return sumForce;
+        yield return null;
     }
 
     float GetDistanceTo(GameObject body) {
@@ -69,59 +75,52 @@ public class Body : MonoBehaviour
         constants = GetConstants();
         G = constants.GetComponent<Constants> ().G;
 
-        bodies = GetBodyArray();
-        masses = new float[bodies.Length];
-        for (int i = 0; i < bodies.Length; i++) {
-            masses[i] = bodies[i].GetComponent<Body> ().selfMass;
-        }
-
         if (Time.time == 0) {
             velocity = initDir.normalized * initSpeed;
         }
 
-        trailRenderer = this.gameObject.AddComponent<TrailRenderer> ();
-        TrailSettingsUpdate();        
+        trail = gameObject.AddComponent<TrailRenderer> ();
+
+            if (trail != null) {
+                trail.time = trailPersistance;
+                trail.material.color = trailColor;
+                trail.startWidth = trailSize;
+                trail.endWidth = trailSize;
+                trail.enabled = trailIsOn;
+            }
     }
 
     // Update is called once per frame
     void Update()
     {
-        bodies = GetBodyArray();
-        masses = new float[bodies.Length];
-        for (int i = 0; i < bodies.Length; i++) {
-            masses[i] = bodies[i].GetComponent<Body> ().selfMass;
-        }
+        StartCoroutine(CalculateAcceleration());
 
-        Vector3 acceleration = CalculateAcceleration(bodies, masses);
-
-        velocity += acceleration * Time.deltaTime;
+        velocity += sumAcceleration * Time.deltaTime;
 
         transform.Translate(velocity * Time.deltaTime, Space.World);
 
         if (rotSpeed != 0) {
             transform.Rotate(rotDir.normalized * rotSpeed * Time.deltaTime);
-        }
-
-        TrailSettingsUpdate();        
-    }
-
-    void TrailSettingsUpdate () {
-        trailRenderer.time = trailPersistance;
-        trailRenderer.material.color = trailColor;
-        trailRenderer.startWidth = trailSize;
-        trailRenderer.endWidth = trailSize;
-        trailRenderer.enabled = trailIsOn;
+        }    
     }
 
     GameObject[] GetBodyArray() {
         return GameObject.FindGameObjectsWithTag("Massive");
     }
 
+    float[] GetMasses(GameObject[] bodies) {
+        float[] masses = new float[bodies.Length];
+        for (int i = 0; i < bodies.Length; i++) {
+            masses[i] = bodies[i].GetComponent<Body> ().selfMass;
+        }
+        return masses;
+    }
+
     GameObject GetConstants() {
         return GameObject.FindGameObjectWithTag("Constants");
     }
 
-    void Merge(GameObject body1, GameObject body2) {
+    IEnumerator Merge(GameObject body1, GameObject body2) {
 
         Vector3 body1Velocity = body1.GetComponent<Body>().velocity;
         Vector3 body2Velocity = body2.GetComponent<Body>().velocity;
@@ -140,11 +139,16 @@ public class Body : MonoBehaviour
         mergedObject.transform.localScale = Vector3.one * (body1Size + body2Size);
         mergedObject.AddComponent<Body> ();
         mergedObject.GetComponent<Body>().velocity = GetBarycenter(new Vector3[2] {body1Velocity,body2Velocity}, new float[2] {body1Mass, body2Mass});
-        // print (mergedObject.GetComponent<Body>().velocity);
         mergedObject.GetComponent<Body>().selfMass = body1Mass + body2Mass;
         mergedObject.tag = "Massive";
-        mergedObject.GetComponent<Body>().trailRenderer = this.gameObject.AddComponent<TrailRenderer> ();
+        TrailRenderer trail = mergedObject.AddComponent<TrailRenderer> ();
+        trail.time = trailPersistance;
+        trail.material.color = trailColor;
+        trail.startWidth = trailSize;
+        trail.endWidth = trailSize;
+        trail.enabled = trailIsOn;
 
+        yield return null;
     }
 
     Vector3 GetBarycenter(Vector3[] bodies, float[] masses) {

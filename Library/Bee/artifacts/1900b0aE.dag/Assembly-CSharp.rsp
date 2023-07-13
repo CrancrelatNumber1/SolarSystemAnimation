@@ -355,6 +355,7 @@
 "Assets/BodyMouvement.cs"
 "Assets/CameraMouvement.cs"
 "Assets/Constants.cs"
+"Assets/TrailRendering.cs"
 -langversion:9.0
 
 /deterministic
