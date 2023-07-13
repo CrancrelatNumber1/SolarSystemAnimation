@@ -231,7 +231,7 @@ GameObject:
   - component: {fileID: 937467230}
   - component: {fileID: 937467234}
   m_Layer: 0
-  m_Name: Soleil
+  m_Name: Body 0
   m_TagString: Massive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -466,7 +466,7 @@ GameObject:
   - component: {fileID: 1221595365}
   - component: {fileID: 1221595364}
   m_Layer: 0
-  m_Name: Soleil (1)
+  m_Name: Body 1
   m_TagString: Massive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -594,7 +594,7 @@ GameObject:
   - component: {fileID: 1585924862}
   - component: {fileID: 1585924866}
   m_Layer: 0
-  m_Name: Planet
+  m_Name: Body 2
   m_TagString: Massive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -699,11 +699,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selfMass: 1
-  initSpeed: 0
-  initDir: {x: 1, y: 0, z: 0}
+  initSpeed: 1.2
+  initDir: {x: -1, y: 0, z: 0}
   rotSpeed: 0
   rotDir: {x: 0, y: 1, z: 0}
-  minAttractionDistance: 0.1
+  minAttractionDistance: 0.3
   trailSize: 0.1
   trailPersistance: 4
   trailColor: {r: 0, g: 0.29349947, b: 1, a: 1}

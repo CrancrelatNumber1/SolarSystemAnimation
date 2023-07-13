@@ -15,7 +15,7 @@ public class CameraMouvement : MonoBehaviour
         transform.position = BodyOfReference.transform.position + BodyOfReference.transform.up * distanceToBody;
     }
 
-    Vector3 GetBarycenter(GameObject[] bodies, float[] masses) {
+    Vector3 GetBarycenter(Vector3[] bodies, float[] masses) {
         Vector3 barycenter = Vector3.zero;
 
         float totalMass = 0;
@@ -24,7 +24,7 @@ public class CameraMouvement : MonoBehaviour
         }
 
         for (int i=0; i < bodies.Length; i++) {
-            barycenter += bodies[i].transform.position * (masses[i] / totalMass);
+            barycenter += bodies[i] * (masses[i] / totalMass);
         }
         return barycenter;
     }
@@ -35,7 +35,7 @@ public class CameraMouvement : MonoBehaviour
 
         masses = new float[bodies.Length];
         for (int i=0; i < bodies.Length; i++) {
-            masses[i] = bodies[i].GetComponent<BodyMouvement>().selfMass;
+            masses[i] = bodies[i].GetComponent<Body>().selfMass;
         }
 
         // Debug.Log("Barycenter : " + GetBarycenter(bodies, masses));
@@ -46,7 +46,17 @@ public class CameraMouvement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        bodies = GameObject.FindGameObjectsWithTag("Massive");
+
+        masses = new float[bodies.Length];
+        for (int i=0; i < bodies.Length; i++) {
+            masses[i] = bodies[i].GetComponent<Body>().selfMass;
+        }
         // PositionToBodyOfReference();
-        transform.position = GetBarycenter(bodies, masses) + (Vector3.up * distanceToBody);
+        Vector3[] bodiesPosition = new Vector3[bodies.Length];
+        for (int i=0; i < bodies.Length; i++) {
+            bodiesPosition[i] = bodies[i].transform.position;
+        }
+        transform.position = GetBarycenter(bodiesPosition, masses) + (Vector3.up * distanceToBody);
     }
 }
