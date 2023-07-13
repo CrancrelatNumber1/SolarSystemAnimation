@@ -74,8 +74,10 @@ public class Body : MonoBehaviour
         for (int i = 0; i < bodies.Length; i++) {
             masses[i] = bodies[i].GetComponent<Body> ().selfMass;
         }
-        
-        velocity = initDir.normalized * initSpeed;
+
+        if (Time.time == 0) {
+            velocity = initDir.normalized * initSpeed;
+        }
 
         trailRenderer = this.gameObject.AddComponent<TrailRenderer> ();
         TrailSettingsUpdate();        
@@ -91,8 +93,9 @@ public class Body : MonoBehaviour
         }
 
         Vector3 acceleration = CalculateAcceleration(bodies, masses);
+
         velocity += acceleration * Time.deltaTime;
-        
+
         transform.Translate(velocity * Time.deltaTime, Space.World);
 
         if (rotSpeed != 0) {
