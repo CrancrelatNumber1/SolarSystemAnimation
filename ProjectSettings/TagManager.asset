@@ -4,9 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Attracteur
-  - Planet
   - Constants
+  - Massive
   layers:
   - Default
   - TransparentFX
