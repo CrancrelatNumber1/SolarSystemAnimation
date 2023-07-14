@@ -4,55 +4,32 @@ using UnityEngine;
 
 public class TrailRendering : MonoBehaviour
 {
-    TrailRenderer trail;
-
-    GameObject[] GetBodyArray() {
-        return GameObject.FindGameObjectsWithTag("Massive");
-    }
-
-    IEnumerator TrailUpdate() {
-        GameObject[] bodies = GetBodyArray();
-
-        foreach (GameObject body in bodies) {
-            Body bodyScript = body.GetComponent<Body> ();
-            
-            if (body.gameObject.GetComponent<TrailRenderer>() == null) {
-               trail = body.gameObject.AddComponent<TrailRenderer> ();
-            }
-
-            // trail.time = bodyScript.trailPersistance;
-            // trail.material.color = bodyScript.trailColor;
-            // trail.startWidth = bodyScript.trailSize;
-            // trail.endWidth = bodyScript.trailSize;
-            // trail.enabled = bodyScript.trailIsOn;
-        }
-
-        yield return null;
-    }
-
+    // Start is called before the first frame update
     void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
     {
         GameObject[] bodies = GetBodyArray();
 
+        Body[] bodyScipts = new Body[bodies.Length];
         foreach (GameObject body in bodies) {
-
             Body bodyScript = body.GetComponent<Body> ();
-
-            if (trail == null) {
-            trail = body.gameObject.AddComponent<TrailRenderer> ();
-            }
-
+            TrailRenderer trail = body.GetComponent<TrailRenderer> ();
             trail.time = bodyScript.trailPersistance;
             trail.material.color = bodyScript.trailColor;
             trail.startWidth = bodyScript.trailSize;
             trail.endWidth = bodyScript.trailSize;
             trail.enabled = bodyScript.trailIsOn;
         }
+
+          
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        // StartCoroutine(TrailUpdate());  
+    GameObject[] GetBodyArray() {
+        return GameObject.FindGameObjectsWithTag("Massive");
     }
 }

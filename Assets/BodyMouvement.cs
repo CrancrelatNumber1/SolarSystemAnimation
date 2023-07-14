@@ -80,14 +80,7 @@ public class Body : MonoBehaviour
         }
 
         trail = gameObject.AddComponent<TrailRenderer> ();
-
-            if (trail != null) {
-                trail.time = trailPersistance;
-                trail.material.color = trailColor;
-                trail.startWidth = trailSize;
-                trail.endWidth = trailSize;
-                trail.enabled = trailIsOn;
-            }
+        trail.enabled = false;
     }
 
     // Update is called once per frame
@@ -101,7 +94,7 @@ public class Body : MonoBehaviour
 
         if (rotSpeed != 0) {
             transform.Rotate(rotDir.normalized * rotSpeed * Time.deltaTime);
-        }    
+        }
     }
 
     GameObject[] GetBodyArray() {
@@ -141,12 +134,7 @@ public class Body : MonoBehaviour
         mergedObject.GetComponent<Body>().velocity = GetBarycenter(new Vector3[2] {body1Velocity,body2Velocity}, new float[2] {body1Mass, body2Mass});
         mergedObject.GetComponent<Body>().selfMass = body1Mass + body2Mass;
         mergedObject.tag = "Massive";
-        TrailRenderer trail = mergedObject.AddComponent<TrailRenderer> ();
-        trail.time = trailPersistance;
-        trail.material.color = trailColor;
-        trail.startWidth = trailSize;
-        trail.endWidth = trailSize;
-        trail.enabled = trailIsOn;
+        // mergedObject.AddComponent<TrailRenderer> ();
 
         yield return null;
     }
