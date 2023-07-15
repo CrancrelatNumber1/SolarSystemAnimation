@@ -6,6 +6,8 @@ public class CameraMouvement : MonoBehaviour
 {
     public GameObject BodyOfReference;
 
+    public float mergingSmoothness = 10;
+
     GameObject[] bodies;
     float[] masses;
 
@@ -57,6 +59,10 @@ public class CameraMouvement : MonoBehaviour
         for (int i=0; i < bodies.Length; i++) {
             bodiesPosition[i] = bodies[i].transform.position;
         }
-        transform.position = GetBarycenter(bodiesPosition, masses) + (Vector3.up * distanceToBody);
+        Vector3 barycenter = GetBarycenter(bodiesPosition, masses) + (Vector3.up * distanceToBody);
+        float newX = Mathf.Lerp(transform.position.x, barycenter.x, Time.deltaTime*mergingSmoothness);
+        float newY = Mathf.Lerp(transform.position.y, barycenter.y, Time.deltaTime*mergingSmoothness);
+        float newZ = Mathf.Lerp(transform.position.z, barycenter.z, Time.deltaTime*mergingSmoothness);
+        transform.position = new Vector3 (newX, newY, newZ);
     }
 }
