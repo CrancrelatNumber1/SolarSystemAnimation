@@ -19,11 +19,15 @@ public class TrailRendering : MonoBehaviour
         foreach (GameObject body in bodies) {
             Body bodyScript = body.GetComponent<Body> ();
             TrailRenderer trail = body.GetComponent<TrailRenderer> ();
-            trail.time = bodyScript.trailPersistance;
-            trail.material.color = bodyScript.trailColor;
-            trail.startWidth = bodyScript.trailSize;
-            trail.endWidth = bodyScript.trailSize;
-            trail.enabled = bodyScript.trailIsOn;
+
+            new WaitForSeconds(.2f);
+            if (trail != null) {
+                trail.time = bodyScript.trailPersistance;
+                trail.material.color = bodyScript.trailColor;
+                trail.startWidth = bodyScript.trailSize;
+                trail.endWidth = bodyScript.trailSize;
+                trail.enabled = bodyScript.trailIsOn;
+            }
         }
 
           
