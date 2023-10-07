@@ -20,7 +20,7 @@ public class TrailRendering : MonoBehaviour
                 trail.endWidth = bodyScript.trailSize;
                 trail.enabled = bodyScript.trailIsOn;
             }
-            new WaitForSeconds(.5f);
+            // new WaitForSeconds(.5f);
         }
 
           
