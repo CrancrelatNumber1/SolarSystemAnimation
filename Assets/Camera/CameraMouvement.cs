@@ -5,14 +5,11 @@ using UnityEngine;
 public class CameraMouvement : MonoBehaviour
 {
     public GameObject BodyOfReference;
-
-    public float mergingSmoothness = 10;
-
+    public bool OnBodyOfReference = false;
+    public float mvtSmoothness = 10;
+    public float distanceToBody = 10;
     GameObject[] bodies;
     float[] masses;
-    Vector3[] bodiesPosition;
-
-    public float distanceToBody = 10;
 
     // void PositionToBodyOfReference() {
     //     transform.position = BodyOfReference.transform.position + BodyOfReference.transform.up * distanceToBody;
@@ -40,7 +37,9 @@ public class CameraMouvement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MoveToBarycenter();
+        if (OnBodyOfReference) { PositionToBodyOfReference();}
+        
+        else { MoveToBarycenter(); } 
     }
 
     void MoveToBarycenter() {
@@ -50,15 +49,21 @@ public class CameraMouvement : MonoBehaviour
         for (int i=0; i < bodies.Length; i++) {
             masses[i] = bodies[i].GetComponent<Body>().mass;
         }
+
         // PositionToBodyOfReference();
+
         Vector3[] bodiesPosition = new Vector3[bodies.Length];
         for (int i=0; i < bodies.Length; i++) {
             bodiesPosition[i] = bodies[i].transform.position;
         }
         Vector3 barycenter = GetBarycenter(bodiesPosition, masses) + (Vector3.back * distanceToBody);
-        float newX = Mathf.Lerp(transform.position.x, barycenter.x, Time.deltaTime*mergingSmoothness);
-        float newY = Mathf.Lerp(transform.position.y, barycenter.y, Time.deltaTime*mergingSmoothness);
-        float newZ = Mathf.Lerp(transform.position.z, barycenter.z, Time.deltaTime*mergingSmoothness);
+        float newX = Mathf.Lerp(transform.position.x, barycenter.x, Time.deltaTime/mvtSmoothness);
+        float newY = Mathf.Lerp(transform.position.y, barycenter.y, Time.deltaTime/mvtSmoothness);
+        float newZ = Mathf.Lerp(transform.position.z, barycenter.z, Time.deltaTime/mvtSmoothness);
         transform.position = new Vector3 (newX, newY, newZ);
+    }
+
+    void PositionToBodyOfReference() {
+        transform.position = BodyOfReference.transform.position + Vector3.back * distanceToBody;
     }
 }

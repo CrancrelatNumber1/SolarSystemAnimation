@@ -41,10 +41,10 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\GravityManager.cs" />
-     <Compile Include="Assets\Scripts\Constants.cs" />
-     <Compile Include="Assets\Scripts\TrailRendering.cs" />
      <Compile Include="Assets\Scripts\Body.cs" />
+     <Compile Include="Assets\Scripts\SimuInit.cs" />
      <Compile Include="Assets\Camera\CameraMouvement.cs" />
+     <Compile Include="Assets\Scripts\UsefullFunctions.cs" />
     <Reference Include="UnityEngine">
         <HintPath>C:\Program Files\Unity\Hub\Editor\2022.3.2f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
     </Reference>

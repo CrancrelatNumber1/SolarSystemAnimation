@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class GravityManager : MonoBehaviour
 {
-    [SerializeField] float G = 1;
-    // [SerializeField] float minAttractionDistance = .1f; // Must be > 0 to not count infinite self attraction in CalculateForces ?
+    public float G = 1;
     [SerializeField] bool mergingEnabled = true;
     bool mergingJustOccured = false;
 
@@ -16,56 +15,88 @@ public class GravityManager : MonoBehaviour
     Vector3[] velocities;
     Vector3[] positions;
 
+    UsefullFunctions usefullFunctions;
+
     // Start is called before the first frame update
     void Start()
     {
-        bodies = GetBodyArray();
-        masses = GetMasses(bodies);
+        usefullFunctions = gameObject.AddComponent<UsefullFunctions>();
+        
+        bodies = usefullFunctions.GetBodyArray();
+        masses = usefullFunctions.GetMasses(bodies);
         velocities = new Vector3[bodies.Length];
         accelerations = new Vector3[bodies.Length];
         positions = new Vector3[bodies.Length];
+
         for (int i=0; i < bodies.Length; i++) {
-            Body body = bodies[i].GetComponent<Body>();
 
-            TrailRenderer trail = body.AddComponent<TrailRenderer>();
-            Body bodyScript = body.GetComponent<Body> ();
-            trail.time = bodyScript.trailPersistance;
-            trail.material.color = bodyScript.trailColor;
-            trail.startWidth = bodyScript.trailSize;
-            trail.endWidth = bodyScript.trailSize;
-            trail.enabled = bodyScript.trailIsOn;
-
+            // Initializing a trail renderer for each body
+            usefullFunctions.TrailInit(bodies[i]);
+    
+            // Initializing the position of each body
             positions[i] = bodies[i].transform.position;
-            velocities[i] = body.initSpeed * body.initDirection;
-            accelerations[i] = Vector3.zero;
 
-            // print ("Positions[" + i + "] = " + positions[i] + " Start Call");
-            // print ("Velocities[" + i + "] = " + velocities[i] + " Start Call");
-            // print ("accelerations[" + i + "] = " + accelerations[i] + " Start Call");
-        }      
+            // Initializing the speed of each body
+            Body bodyScript = bodies[i].GetComponent<Body> ();
+            if (bodyScript.initCircOrbit) {
+                float circSpeed = usefullFunctions.CircularSpeed(bodies[i], bodies, G);
+                Vector3[] pos = usefullFunctions.GetPositions(bodies);
+                Vector3 barycenter = usefullFunctions.GetBarycenter(pos, masses);
+                Vector3 direction = Vector3.Cross((bodies[i].transform.position - barycenter).normalized, Vector3.back);
+                velocities[i] = circSpeed * direction;
+            }
+            else {
+                velocities[i] = bodyScript.initSpeed * bodyScript.initDirection;
+            }
+        } 
     }
 
     // Update is called once per frame
     void Update()
     {
+        bodies = usefullFunctions.GetBodyArray();
+        masses = usefullFunctions.GetMasses(bodies);
+
         if (mergingJustOccured) {
-            bodies = GetBodyArray();
-            masses = GetMasses(bodies);
+            for (int i=0; i < bodies.Length; i++) {
+                velocities[i] = bodies[i].GetComponent<Body>().currentVelocity;
+            }
             mergingJustOccured = false;
         }
-
-        bodies = GetBodyArray();
-        masses = GetMasses(bodies);
 
         UpdateVelocities();
         UpdatePositions();
         mergeCheck();
     }
 
+    // Calculates the sum of the forces applied on the body 
+    void CalculateAccelerations(GameObject[] bodies, float[] masses) {
+
+        accelerations = new Vector3[bodies.Length];
+
+        for (int i = 0; i < bodies.Length; i++) {
+            GameObject body = bodies[i];
+            Vector3 acceleration = Vector3.zero;
+            for (int j=0; j < bodies.Length; j++) 
+            {
+                if (i != j) 
+                {
+                    GameObject attractor = bodies[j];
+                    Vector3 vectToAttractor = attractor.transform.position - body.transform.position;
+                    Vector3 directionToAttractor = vectToAttractor.normalized;
+                    float distanceToAttractor = vectToAttractor.magnitude;
+                    acceleration += G * masses[j] / (distanceToAttractor * distanceToAttractor) * directionToAttractor;
+                }
+            }
+            accelerations[i] = acceleration;
+        }
+    }
+
     void UpdateVelocities() {
         CalculateAccelerations(bodies, masses);
         for (int i=0; i < bodies.Length; i++){
             velocities[i] += accelerations[i] * Time.deltaTime;
+            bodies[i].GetComponent<Body>().currentVelocity = velocities[i];
         }
     }
 
@@ -76,17 +107,16 @@ public class GravityManager : MonoBehaviour
     }
 
     void mergeCheck() {
-        if (mergingEnabled) 
-        {
-        for (int i=0; i < bodies.Length; i++) {
-            GameObject body = bodies[i];
-            for (int j=i+1; j < bodies.Length; j++) {
-                GameObject otherBody = bodies[j];
-                if (GetDistance(body, otherBody) < body.transform.localScale.x) {
-                    Merge(body, otherBody);
+        if (mergingEnabled) {
+            for (int i=0; i < bodies.Length; i++) {
+                GameObject body = bodies[i];
+                for (int j=i+1; j < bodies.Length; j++) {
+                    GameObject otherBody = bodies[j];
+                    if (usefullFunctions.GetDistance(body, otherBody) < Mathf.Max(body.transform.localScale.x, otherBody.transform.localScale.x)) {
+                        Merge(body, otherBody);
+                    }
                 }
             }
-        }
         }
     }
 
@@ -104,74 +134,13 @@ public class GravityManager : MonoBehaviour
         Destroy(body2);
         
         GameObject mergedObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        mergedObject.AddComponent<Body>();
+        mergedObject.tag = "Massive";
         mergedObject.transform.position = body1.transform.position;
         mergedObject.transform.localScale = Vector3.one * Mathf.Pow(body1Size*body1Size*body1Size + body2Size*body2Size*body2Size, 1f/3f);
-        mergedObject.AddComponent<Body>();
-        mergedObject.GetComponent<Body>().currentVelocity = body1Mass/(body1Mass + body2Mass)*body1Velocity + body2Mass/(body1Mass + body2Mass)*body2Velocity;
         mergedObject.GetComponent<Body>().mass = body1Mass + body2Mass;
-        mergedObject.tag = "Massive";
+        mergedObject.GetComponent<Body>().currentVelocity = body1Mass/(body1Mass + body2Mass)*body1Velocity + body2Mass/(body1Mass + body2Mass)*body2Velocity;
 
         mergingJustOccured = true;
     }
-
-    // Calculates the sum of the forces applied on the body 
-    void CalculateAccelerations(GameObject[] bodies, float[] masses) {
-
-        accelerations = new Vector3[bodies.Length];
-
-        for (int i = 0; i < bodies.Length; i++) 
-        {
-            GameObject body = bodies[i];
-            Vector3 acceleration = Vector3.zero;
-            for (int j=0; j < bodies.Length; j++) 
-            {
-                if (i != j) 
-                {
-                    GameObject attractor = bodies[j];
-                    Vector3 vectToAttractor = attractor.transform.position - body.transform.position;
-                    Vector3 directionToAttractor = vectToAttractor.normalized;
-                    float distanceToAttractor = vectToAttractor.magnitude;
-                    acceleration += G * masses[j] / (distanceToAttractor * distanceToAttractor) * directionToAttractor;
-                }
-                // if (i != j) 
-                // {
-                //     GameObject attractor = bodies[j];
-
-                //     if (GetDistance(attractor, body) > minAttractionDistance) {
-                //         Vector3 vectToAttractor = attractor.transform.position - body.transform.position;
-                //         Vector3 directionToAttractor = vectToAttractor.normalized;
-                //         float distanceToAttractor = vectToAttractor.magnitude;
-                //         acceleration += (G * masses[i] / distanceToAttractor) * directionToAttractor; 
-                //     }
-                // }
-            }
-            accelerations[i] = acceleration;
-        }
-    }
-
-    float GetDistance(GameObject body, GameObject otherBody) {
-        return (body.transform.position - otherBody.transform.position).magnitude;
-    }
-
-    GameObject[] GetBodyArray() {
-        return GameObject.FindGameObjectsWithTag("Massive");
-        // return GameObject.FindObjectsByType(Body);
-    }
-
-    float[] GetMasses(GameObject[] bodies) {
-        float[] masses = new float[bodies.Length];
-        for (int i = 0; i < bodies.Length; i++) {
-            masses[i] = bodies[i].GetComponent<Body>().mass;
-        }
-        return masses;
-    }
-
-    Vector3[] GetPositions(GameObject[] bodies) {
-        Vector3[] positions = new Vector3[bodies.Length];
-        for (int i=0; i < bodies.Length; i++) {
-            positions[i] = bodies[i].transform.position;
-        }
-        return positions;
-    }
-
 }
