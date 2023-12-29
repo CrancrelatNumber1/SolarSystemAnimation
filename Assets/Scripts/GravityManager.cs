@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class GravityManager : MonoBehaviour
 {
-    public float G = 1;
-    [SerializeField] bool mergingEnabled = true;
-    bool mergingJustOccured = false;
+    public float G = 1; // The gravitational constant of the simulation
+    [SerializeField] bool mergingEnabled = true; // Enable of disable merging
+    bool mergingJustOccured = false;    // Is true if object merged on the last frame
 
     GameObject[] bodies;
     float[] masses;
@@ -38,7 +38,7 @@ public class GravityManager : MonoBehaviour
 
             // Initializing the speed of each body
             Body bodyScript = bodies[i].GetComponent<Body> ();
-            if (bodyScript.initCircOrbit) {
+            if (bodyScript.initCircOrbit) { // Initialise a circular orbit ? (relative body could be added)
                 float circSpeed = usefullFunctions.CircularSpeed(bodies[i], bodies, G);
                 Vector3[] pos = usefullFunctions.GetPositions(bodies);
                 Vector3 barycenter = usefullFunctions.GetBarycenter(pos, masses);
@@ -54,19 +54,21 @@ public class GravityManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Get the bodies and their masses
         bodies = usefullFunctions.GetBodyArray();
         masses = usefullFunctions.GetMasses(bodies);
 
-        if (mergingJustOccured) {
+
+        if (mergingJustOccured) { // If we just had a merge in the last frame we have reinitialize the velocities (or the new body will be stationary)
             for (int i=0; i < bodies.Length; i++) {
                 velocities[i] = bodies[i].GetComponent<Body>().currentVelocity;
             }
             mergingJustOccured = false;
         }
 
-        UpdateVelocities();
-        UpdatePositions();
-        mergeCheck();
+        UpdateVelocities(); // Update the velocities using the forces
+        UpdatePositions(); // Update the positions using the velocities
+        mergeCheck(); // Check if objects should merge
     }
 
     // Calculates the sum of the forces applied on the body 
