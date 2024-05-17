@@ -22,7 +22,10 @@ public class Body : MonoBehaviour
     public Color trailColor = Color.white;
     public bool trailIsOn = true;
 
+    // Initialisation of the orbit
     public bool initCircOrbit = false;
+    public GameObject BodyOfReference;
+    public float divisionFactor = 1;
 
     void OnValidate()
     {

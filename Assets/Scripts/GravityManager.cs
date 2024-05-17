@@ -37,13 +37,27 @@ public class GravityManager : MonoBehaviour
             positions[i] = bodies[i].transform.position;
 
             // Initializing the speed of each body
+            GameObject body = bodies[i];
             Body bodyScript = bodies[i].GetComponent<Body> ();
-            if (bodyScript.initCircOrbit) { // Initialise a circular orbit ? (relative body could be added)
-                float circSpeed = usefullFunctions.CircularSpeed(bodies[i], bodies, G);
-                Vector3[] pos = usefullFunctions.GetPositions(bodies);
-                Vector3 barycenter = usefullFunctions.GetBarycenter(pos, masses);
-                Vector3 direction = Vector3.Cross((bodies[i].transform.position - barycenter).normalized, Vector3.back);
-                velocities[i] = circSpeed * direction;
+            if (bodyScript.initCircOrbit) { // Initialise a circular orbit ? 
+                if (bodyScript.BodyOfReference != null) { // If we have a body of reference to initiate the circular orbit from
+                    GameObject[] refBod =  new GameObject[1];
+                    refBod[0] = bodyScript.BodyOfReference;
+                    float divFact = bodyScript.divisionFactor;
+                    float circSpeed = usefullFunctions.CircularSpeed(bodies[i], refBod, G);
+                    Vector3[] pos = usefullFunctions.GetPositions(refBod);
+                    Vector3 barycenter = refBod[0].transform.position;
+                    Vector3 direction = Vector3.Cross((bodies[i].transform.position - barycenter).normalized, Vector3.back);
+                    Vector3 initOffset = refBod[0].GetComponent<Body> ().initSpeed * refBod[0].GetComponent<Body> ().initDirection;
+                    velocities[i] = (circSpeed/Mathf.Sqrt(divFact)) * direction + initOffset; 
+                }
+                else { // Otherwise we initiate a circular orbit around the center of mass of the system
+                    float circSpeed = usefullFunctions.CircularSpeed(bodies[i], bodies, G);
+                    Vector3[] pos = usefullFunctions.GetPositions(bodies);
+                    Vector3 barycenter = usefullFunctions.GetBarycenter(pos, masses);
+                    Vector3 direction = Vector3.Cross((bodies[i].transform.position - barycenter).normalized, Vector3.back);
+                    velocities[i] = circSpeed * direction;  
+                }   
             }
             else {
                 velocities[i] = bodyScript.initSpeed * bodyScript.initDirection;
