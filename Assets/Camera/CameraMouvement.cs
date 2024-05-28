@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraMouvement : MonoBehaviour
 {
     public GameObject BodyOfReference;
+    public bool isOnBoard;
     public bool OnBodyOfReference = false;
     public float mvtSmoothness = 10;
     public float distanceToBody = 10;

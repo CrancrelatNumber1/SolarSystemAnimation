@@ -27,13 +27,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3670842599950911520}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.618278, y: -3.4125097, z: -4.6515837}
+  m_LocalPosition: {x: 10, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6543483554485834692
 MeshFilter:
@@ -123,9 +123,12 @@ MonoBehaviour:
   initDirection: {x: 0, y: 0, z: 0}
   rotSpeed: 0
   rotDirection: {x: 0, y: 0, z: 1}
-  currentVelocity: {x: 0, y: 0, z: 0}
   currentAcceleration: {x: 0, y: 0, z: 0}
+  currentVelocity: {x: 0, y: 0, z: 0}
   trailSize: 0.1
   trailPersistance: 2
   trailColor: {r: 1, g: 1, b: 1, a: 1}
   trailIsOn: 1
+  initCircOrbit: 0
+  BodyOfReference: {fileID: 0}
+  divisionFactor: 0

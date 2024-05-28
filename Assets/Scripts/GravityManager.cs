@@ -53,10 +53,11 @@ public class GravityManager : MonoBehaviour
                 }
                 else { // Otherwise we initiate a circular orbit around the center of mass of the system
                     float circSpeed = usefullFunctions.CircularSpeed(bodies[i], bodies, G);
+                    float divFact = bodyScript.divisionFactor;
                     Vector3[] pos = usefullFunctions.GetPositions(bodies);
                     Vector3 barycenter = usefullFunctions.GetBarycenter(pos, masses);
                     Vector3 direction = Vector3.Cross((bodies[i].transform.position - barycenter).normalized, Vector3.back);
-                    velocities[i] = circSpeed * direction;  
+                    velocities[i] = (circSpeed/Mathf.Sqrt(divFact)) * direction;  
                 }   
             }
             else {
@@ -146,12 +147,20 @@ public class GravityManager : MonoBehaviour
         float body1Size = body1.transform.localScale.x;
         float body2Size = body2.transform.localScale.x;
 
+        Color body1Color = body1.GetComponent<MeshRenderer>().material.color;
+        Color body2Color = body2.GetComponent<MeshRenderer>().material.color;
+
         Destroy(body1);
         Destroy(body2);
+
+        Color mergedColor = Color.Lerp (body1Color, body2Color, .5f);
         
         GameObject mergedObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         mergedObject.AddComponent<Body>();
         mergedObject.tag = "Massive";
+        mergedObject.GetComponent<MeshRenderer>().material.color = mergedColor;
+        usefullFunctions.TrailInit(mergedObject);
+        mergedObject.GetComponent<TrailRenderer>().material.color = mergedColor;
         mergedObject.transform.position = body1.transform.position;
         mergedObject.transform.localScale = Vector3.one * Mathf.Pow(body1Size*body1Size*body1Size + body2Size*body2Size*body2Size, 1f/3f);
         mergedObject.GetComponent<Body>().mass = body1Mass + body2Mass;
