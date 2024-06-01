@@ -123,13 +123,14 @@ public class GravityManager : MonoBehaviour
         }
     }
 
+    // Check if merging is enabled, and if so, goes through the array of bodys and determines whether they should be merged
     void mergeCheck() {
         if (mergingEnabled) {
             for (int i=0; i < bodies.Length; i++) {
                 GameObject body = bodies[i];
                 for (int j=i+1; j < bodies.Length; j++) {
                     GameObject otherBody = bodies[j];
-                    if (usefullFunctions.GetDistance(body, otherBody) < Mathf.Max(body.transform.localScale.x, otherBody.transform.localScale.x)) {
+                    if (usefullFunctions.GetDistance(body, otherBody) < (Mathf.Max(body.transform.localScale.x, otherBody.transform.localScale.x)/2)) {
                         Merge(body, otherBody);
                     }
                 }
@@ -137,7 +138,9 @@ public class GravityManager : MonoBehaviour
         }
     }
 
+    // Does the merging of two bodies.
     void Merge(GameObject body1, GameObject body2) {
+        // We start by geting all the necessary information about the bodies
         Vector3 body1Velocity = body1.GetComponent<Body>().currentVelocity;
         Vector3 body2Velocity = body2.GetComponent<Body>().currentVelocity;
 
@@ -149,12 +152,15 @@ public class GravityManager : MonoBehaviour
 
         Color body1Color = body1.GetComponent<MeshRenderer>().material.color;
         Color body2Color = body2.GetComponent<MeshRenderer>().material.color;
-
+        
+        // Then we destoy them
         Destroy(body1);
         Destroy(body2);
-
+        
+        // We calculate using the info from the bodies all the caracteristics of the new object
         Color mergedColor = Color.Lerp (body1Color, body2Color, .5f);
         
+        // Finally we create the new object and we set all its caracteristics
         GameObject mergedObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         mergedObject.AddComponent<Body>();
         mergedObject.tag = "Massive";
@@ -166,6 +172,7 @@ public class GravityManager : MonoBehaviour
         mergedObject.GetComponent<Body>().mass = body1Mass + body2Mass;
         mergedObject.GetComponent<Body>().currentVelocity = body1Mass/(body1Mass + body2Mass)*body1Velocity + body2Mass/(body1Mass + body2Mass)*body2Velocity;
 
+        // In order to stop the merging check on the next frame (would cause an error/warning), we set mergingJustOccured to true.
         mergingJustOccured = true;
     }
 }

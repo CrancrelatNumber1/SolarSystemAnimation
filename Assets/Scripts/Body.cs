@@ -15,6 +15,13 @@ public class Body : MonoBehaviour
     [HideInInspector] public Vector3 currentAcceleration;
     [HideInInspector] public Vector3 currentVelocity;
 
+    // Visual aspects of the body
+    public Color bodyColor = Color.white;
+    public float bodySize = 1;
+    [HideInInspector] public MeshFilter meshFilter;
+    [HideInInspector] public MeshRenderer meshRenderer;
+    [HideInInspector] public Material material;
+
     // Trail parameters
     TrailRenderer trail;
     public float trailSize = .1f;
@@ -29,14 +36,25 @@ public class Body : MonoBehaviour
 
     void OnValidate()
     {
+        // Updating the size of the body
+        transform.localScale = Vector3.one * bodySize;
+
+
+        // We get the trail renderer of the body and we set its parameters
         trail = GetComponent<TrailRenderer>();
-        if (trail != null)
-        {
+        if (trail != null) {
             trail.time = trailPersistance;
             trail.material.color = trailColor;
             trail.startWidth = trailSize;
             trail.endWidth = trailSize;
             trail.enabled = trailIsOn;
+        }
+
+        // We get the mesh renderer of the body and we set its parameters
+        meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer != null) {
+            material = meshRenderer.sharedMaterial;
+            material.color = bodyColor;            
         }
     }
 }
