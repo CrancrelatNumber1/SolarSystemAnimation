@@ -30,10 +30,17 @@ public class CameraMouvement : MonoBehaviour
         return barycenter;
     }
 
-    void Start()
+    void OnValidate() 
     {
-        MoveToBarycenter();
+        if (OnBodyOfReference) { PositionToBodyOfReference();}
+        else { MoveToBarycenter(); }
     }
+
+    // void Start()
+    // {
+    //     if (OnBodyOfReference) { PositionToBodyOfReference();}
+    //     else { MoveToBarycenter();}
+    // }
 
     // Update is called once per frame
     void Update()

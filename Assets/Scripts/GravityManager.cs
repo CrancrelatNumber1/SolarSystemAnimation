@@ -7,6 +7,10 @@ public class GravityManager : MonoBehaviour
 {
     public float G = 1; // The gravitational constant of the simulation
     [SerializeField] bool mergingEnabled = true; // Enable of disable merging
+    [Range(0.1f, 10f)]
+    public float simulationSpeed = 1; // The speed of the simulation
+    // public bool simulationPaused = false; // Is true if the simulation is paused
+
     bool mergingJustOccured = false;    // Is true if object merged on the last frame
 
     GameObject[] bodies;
@@ -16,6 +20,12 @@ public class GravityManager : MonoBehaviour
     Vector3[] positions;
 
     UsefullFunctions usefullFunctions;
+
+    // OnValidate is called every time the script is loaded or a value is changed in the inspector
+    void OnValidate()
+    {
+        Time.fixedDeltaTime = 0.02f * simulationSpeed;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -112,14 +122,14 @@ public class GravityManager : MonoBehaviour
     void UpdateVelocities() {
         CalculateAccelerations(bodies, masses);
         for (int i=0; i < bodies.Length; i++){
-            velocities[i] += accelerations[i] * Time.deltaTime;
+            velocities[i] += accelerations[i] * Time.fixedDeltaTime;
             bodies[i].GetComponent<Body>().currentVelocity = velocities[i];
         }
     }
 
     void UpdatePositions() {
         for (int i=0; i < bodies.Length; i++){
-            bodies[i].transform.position += velocities[i] * Time.deltaTime;
+            bodies[i].transform.position += velocities[i] * Time.fixedDeltaTime;
         }
     }
 
@@ -158,7 +168,7 @@ public class GravityManager : MonoBehaviour
         Destroy(body2);
         
         // We calculate using the info from the bodies all the caracteristics of the new object
-        Color mergedColor = Color.Lerp (body1Color, body2Color, .5f);
+        Color mergedColor = Color.Lerp (body1Color, body2Color, body2Mass/(body1Mass + body2Mass));
         
         // Finally we create the new object and we set all its caracteristics
         GameObject mergedObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -167,7 +177,7 @@ public class GravityManager : MonoBehaviour
         mergedObject.GetComponent<MeshRenderer>().material.color = mergedColor;
         usefullFunctions.TrailInit(mergedObject);
         mergedObject.GetComponent<TrailRenderer>().material.color = mergedColor;
-        mergedObject.transform.position = body1.transform.position;
+        mergedObject.transform.position = Vector3.Lerp(body1.transform.position, body2.transform.position, body2Mass/(body1Mass + body2Mass));
         mergedObject.transform.localScale = Vector3.one * Mathf.Pow(body1Size*body1Size*body1Size + body2Size*body2Size*body2Size, 1f/3f);
         mergedObject.GetComponent<Body>().mass = body1Mass + body2Mass;
         mergedObject.GetComponent<Body>().currentVelocity = body1Mass/(body1Mass + body2Mass)*body1Velocity + body2Mass/(body1Mass + body2Mass)*body2Velocity;

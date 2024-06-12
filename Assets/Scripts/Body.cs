@@ -39,11 +39,18 @@ public class Body : MonoBehaviour
         // Updating the size of the body
         transform.localScale = Vector3.one * bodySize;
 
+        // Get the gravityManager object and the simulation speed
+        GravityManager gravityManager = GameObject.FindObjectOfType<GravityManager>();
+        float simulationSpeed = 1;
+        if (gravityManager!= null) {
+            simulationSpeed = gravityManager.simulationSpeed;
+            
+        }
 
         // We get the trail renderer of the body and we set its parameters
         trail = GetComponent<TrailRenderer>();
         if (trail != null) {
-            trail.time = trailPersistance;
+            trail.time = trailPersistance / simulationSpeed;
             trail.material.color = trailColor;
             trail.startWidth = trailSize;
             trail.endWidth = trailSize;
